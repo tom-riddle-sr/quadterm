@@ -1,0 +1,40 @@
+{
+  "name": "quadterm",
+  "productName": "QuadTerm",
+  "version": "0.3.0",
+  "license": "MIT",
+  "repository": "github:tom-riddle-sr/quadterm",
+  "description": "A 2x2 terminal grid for running multiple Claude Code sessions: hover to zoom, unlimited sessions, pop-out windows",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "postinstall": "node scripts/fix-spawn-helper.js",
+    "dist": "electron-builder --mac --arm64 --dir",
+    "dist:dmg": "electron-builder --mac --arm64"
+  },
+  "dependencies": {
+    "@xterm/addon-fit": "^0.11.0",
+    "@xterm/addon-serialize": "^0.14.0",
+    "@xterm/addon-web-links": "^0.12.0",
+    "@xterm/xterm": "^6.0.0",
+    "node-pty": "1.1.0"
+  },
+  "devDependencies": {
+    "electron": "^45.0.0",
+    "electron-builder": "^26.0.0"
+  },
+  "build": {
+    "appId": "local.quadterm",
+    "productName": "QuadTerm",
+    "asarUnpack": [
+      "node_modules/node-pty/**"
+    ],
+    "mac": {
+      "category": "public.app-category.developer-tools",
+      "target": [
+        "dmg"
+      ],
+      "identity": "-"
+    }
+  }
+}

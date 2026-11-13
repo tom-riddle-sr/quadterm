@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'" />
+  <title>QuadTerm</title>
+  <link rel="stylesheet" href="../node_modules/@xterm/xterm/css/xterm.css" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="single">
+  <div id="titlebar">
+    <span id="single-title" class="app-name"></span>
+    <span id="single-cwd" class="pane-cwd"></span>
+    <button class="pane-btn" id="single-claude" title="執行 claude">▶ claude</button>
+    <button id="dock-btn" title="收回 QuadTerm 主視窗（關掉這個視窗也會收回）">⇲ 收回主視窗</button>
+  </div>
+  <div id="single-wrap" class="term-wrap"></div>
+  <div class="exit-overlay" id="single-exit">
+    <div>程式已結束</div>
+    <button>重新啟動（Enter）</button>
+  </div>
+
+  <script src="../node_modules/@xterm/xterm/lib/xterm.js"></script>
+  <script src="../node_modules/@xterm/addon-fit/lib/addon-fit.js"></script>
+  <script src="../node_modules/@xterm/addon-web-links/lib/addon-web-links.js"></script>
+  <script src="../node_modules/@xterm/addon-serialize/lib/addon-serialize.js"></script>
+  <script src="term-common.js"></script>
+  <script src="single.js"></script>
+</body>
+</html>
