@@ -2,7 +2,7 @@ const { app, BrowserWindow, ipcMain, Menu, clipboard, shell, screen } = require(
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
-const { execFile } = require('child_process');
+const { execFile, execFileSync } = require('child_process');
 const pty = require('node-pty');
 
 // ---------- 設定檔 ~/.quadterm.json（可選） ----------
@@ -17,6 +17,8 @@ const DEFAULT_CONFIG = {
   hoverDelay: 120,          // 滑鼠停多久（毫秒）才放大
   animationMs: 160,         // 放大動畫長度（毫秒），0 = 不要動畫、直接切換
   resetOnLeave: true,       // 滑鼠離開視窗時恢復平均
+  popoutTarget: 'terminal', // 拉出去時：'terminal' = 交給 Mac 的終端機 app；'window' = QuadTerm 自己的獨立視窗
+  terminalApp: 'Terminal',  // 交給哪個終端機 app（例如 'Terminal'、'iTerm'）
   // 程式開啟時自動建立的終端（可以少於或多於 4 個）
   startup: [
     { name: '', cwd: '', command: '' },
@@ -171,7 +173,58 @@ ipcMain.on('open:url', (_e, url) => {
   if (/^https?:\/\//.test(url)) shell.openExternal(url);
 });
 
-// 拉出成獨立視窗
+// ---------- 交給 Mac 的終端機 app ----------
+// 執行中的程式沒辦法搬到別的 app，所以：結束 QuadTerm 這格 → 在終端機 app 開新視窗、
+// 同一個資料夾；如果原本在跑 claude，就自動 `claude --continue` 接續同一段對話。
+function shQuote(s) { return "'" + String(s).replace(/'/g, "'\\''") + "'"; }
+
+function cwdOfPid(pid) {
+  try {
+    if (process.platform === 'linux') return fs.readlinkSync(`/proc/${pid}/cwd`);
+    const out = execFileSync('lsof', ['-a', '-d', 'cwd', '-p', String(pid), '-Fn'], { timeout: 1500 }).toString();
+    const line = out.split('\n').find((l) => l[0] === 'n');
+    return line ? line.slice(1) : '';
+  } catch (_) {
+    return '';
+  }
+}
+
+ipcMain.handle('session:handoff', async (_e, id, opts = {}) => {
+  const s = sessions.get(id);
+  let cwd = '';
+  if (s && s.pty) cwd = cwdOfPid(s.pty.pid);
+  cwd = cwd || expandHome(opts.cwd) || os.homedir();
+
+  const shellPath = config.shell || process.env.SHELL || '/bin/zsh';
+  const inner = opts.resumeClaude
+    ? `claude --continue; exec ${shQuote(shellPath)} -l -i`
+    : `exec ${shQuote(shellPath)} -l -i`;
+  const script = [
+    '#!/bin/sh',
+    'rm -f "$0"',
+    `cd ${shQuote(cwd)} || cd ~`,
+    'clear',
+    `exec ${shQuote(shellPath)} -l -i -c ${shQuote(inner)}`,
+    ''
+  ].join('\n');
+
+  // 先結束 QuadTerm 這格（claude 會把對話存好），再開終端機
+  killSession(id);
+  await new Promise((r) => setTimeout(r, 500));
+
+  const file = path.join(os.tmpdir(), `quadterm-${Date.now()}-${id}.command`);
+  fs.writeFileSync(file, script, { mode: 0o755 });
+  if (process.platform !== 'darwin') return { ok: true, file, cwd }; // 測試用
+
+  return await new Promise((resolve) => {
+    execFile('open', ['-a', config.terminalApp || 'Terminal', file], (err) => {
+      if (err) resolve({ ok: false, error: `打不開 ${config.terminalApp || 'Terminal'}：${err.message}`, cwd });
+      else resolve({ ok: true, cwd });
+    });
+  });
+});
+
+// 拉出成 QuadTerm 自己的獨立視窗（popoutTarget: 'window' 時）
 ipcMain.on('session:popout', (_e, id, payload) => {
   const s = sessions.get(id);
   if (!s) return;
@@ -251,6 +304,15 @@ ipcMain.on('session:requestDock', (_e, id) => {
   setTimeout(() => { if (!w.isDestroyed()) dock(id, '', w); }, 1500);
 });
 
+// 拖曳放開時，滑鼠是不是在視窗外（macOS 上 dragend 事件的座標常常是 0，不可靠，所以直接問系統）
+ipcMain.handle('cursor:outside', (e) => {
+  const w = BrowserWindow.fromWebContents(e.sender);
+  if (!w) return false;
+  const p = screen.getCursorScreenPoint();
+  const b = w.getBounds();
+  return p.x < b.x || p.x >= b.x + b.width || p.y < b.y || p.y >= b.y + b.height;
+});
+
 ipcMain.on('session:focusPopout', (_e, id) => {
   const w = popWins.get(id);
   if (w && !w.isDestroyed()) { w.show(); w.focus(); }
@@ -275,7 +337,7 @@ function buildMenu() {
       submenu: [
         { label: '開新終端', accelerator: 'CmdOrCtrl+T', click: () => send('menu', 'new') },
         { label: '關閉目前終端', accelerator: 'CmdOrCtrl+W', click: () => send('menu', 'close') },
-        { label: '拉出成獨立視窗／收回', accelerator: 'CmdOrCtrl+Shift+D', click: () => send('menu', 'popout') },
+        { label: config.popoutTarget === 'window' ? '拉出成獨立視窗／收回' : '在終端機 app 開啟（拉出去）', accelerator: 'CmdOrCtrl+Shift+D', click: () => send('menu', 'popout') },
         { label: '重新啟動目前終端', accelerator: 'CmdOrCtrl+Shift+R', click: () => send('menu', 'restart') },
         { type: 'separator' },
         { label: '上一個終端', accelerator: 'CmdOrCtrl+Shift+[', click: () => send('menu', 'prev') },

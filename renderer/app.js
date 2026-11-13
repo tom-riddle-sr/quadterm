@@ -26,6 +26,9 @@
   const slotEls = [];
 
   const SCROLLBACK_TRANSFER = 5000;
+  const toTerminal = config.popoutTarget !== 'window';
+  const termApp = config.terminalApp || 'Terminal';
+  const POP_TITLE = toTerminal ? `在 ${termApp} 開啟 (⌘⇧D)` : '拉出成獨立視窗 (⌘⇧D)';
 
   // ---------- 工具 ----------
   const homeDir = config.homeDir || '';
@@ -48,7 +51,7 @@
         <span class="pane-title"></span>
         <span class="pane-cwd"></span>
         <button class="pane-btn" data-act="claude" title="在這格執行 claude">▶ claude</button>
-        <button class="pane-btn" data-act="pop" title="拉出成獨立視窗 (⌘⇧D)">⧉</button>
+        <button class="pane-btn" data-act="pop" title="${POP_TITLE}">⧉</button>
         <button class="pane-btn lock-btn" data-act="lock" title="鎖定放大這格 (⌘L)">🔒</button>
         <button class="pane-btn" data-act="max" title="這格全螢幕 (⌘⇧↩)">⤢</button>
         <button class="pane-btn" data-act="restart" title="重新啟動 (⌘⇧R)">↻</button>
@@ -83,6 +86,25 @@
       const s = sessions.get(slots[i]);
       if (s) touch(s);
       activate(i, { zoom: autoZoom && !maximized && !!s, focus: true });
+    });
+
+    // 直接拖標題列：拖到視窗外 = 拉出成獨立視窗；拖到另一格 = 互換
+    const header = el.querySelector('.pane-header');
+    header.draggable = true;
+    let draggingId = null;
+    header.addEventListener('dragstart', (e) => {
+      const id = slots[i];
+      draggingId = id;
+      if (id == null || e.target.closest('button')) { e.preventDefault(); return; }
+      e.dataTransfer.setData('application/x-qt-session', String(id));
+      e.dataTransfer.effectAllowed = 'move';
+      el.classList.add('dragging');
+    });
+    header.addEventListener('dragend', (e) => {
+      el.classList.remove('dragging');
+      const id = draggingId;
+      draggingId = null;
+      if (id != null) popoutIfDroppedOutside(id, e);
     });
 
     el.querySelector('.pane-header').addEventListener('click', (e) => {
@@ -302,9 +324,43 @@
   }
 
   // ---------- 拉出成獨立視窗 / 收回 ----------
+  // 拉出去：交給 Mac 的終端機 app
+  async function handoff(id) {
+    const s = sessions.get(id);
+    if (!s || s.handingOff) return;
+    const proc = runningProc(s);
+    const isClaude = /claude/i.test(proc);
+    if (isClaude && s.busy &&
+        !confirm(`claude 正在做事，拉出去會中斷目前這一步。\n${termApp} 會在同一個資料夾接續同一段對話（claude --continue）。\n\n要繼續嗎？`)) return;
+    if (proc && !isClaude &&
+        !confirm(`這格正在執行 ${proc}，拉出去會把它結束。\n${termApp} 會在同一個資料夾開一個新視窗。\n\n要繼續嗎？`)) return;
+    s.handingOff = true;
+    const res = await qt.handoff(id, { cwd: s.cwd, resumeClaude: isClaude });
+    if (!res || !res.ok) {
+      s.handingOff = false;
+      alert((res && res.error) || `打不開 ${termApp}`);
+      return;
+    }
+    removeSession(id);
+  }
+
+  function removeSession(id) {
+    const s = sessions.get(id);
+    if (!s) return;
+    const i = slotOf(id);
+    if (s.term) s.term.dispose();
+    if (s.host) s.host.remove();
+    sessions.delete(id);
+    order.splice(order.indexOf(id), 1);
+    if (i >= 0) { slots[i] = null; fillSlot(i); }
+    renderTabs();
+    activeSession()?.term?.focus();
+  }
+
   function popout(id, atCursor) {
     const s = sessions.get(id);
     if (!s) return;
+    if (toTerminal) { handoff(id); return; }
     if (s.popped) { qt.focusPopout(id); return; }
     const i = slotOf(id);
     const rect = (i >= 0 ? slotEls[i].el : grid).getBoundingClientRect();
@@ -492,7 +548,7 @@
       t.querySelector('.tab-slot').textContent = s.popped ? '⧉' : i >= 0 ? String(i + 1) : '';
       t.querySelector('.tab-name').textContent = label(s);
       t.querySelector('.tab-proc').textContent = s.exited ? '已結束' : runningProc(s);
-      t.title = `${label(s)}\n${tilde(s.cwd)}${runningProc(s) ? '\n執行中：' + runningProc(s) : ''}\n\n點一下：顯示在畫面上\n拖到某一格：放進那格\n拖到視窗外：拉出成獨立視窗\n雙擊名稱：改名`;
+      t.title = `${label(s)}\n${tilde(s.cwd)}${runningProc(s) ? '\n執行中：' + runningProc(s) : ''}\n\n點一下：顯示在畫面上\n拖到某一格：放進那格\n拖到視窗外：${toTerminal ? `在 ${termApp} 開啟` : '拉出成獨立視窗'}\n雙擊名稱：改名`;
     });
   }
 
@@ -540,12 +596,14 @@
     const t = e.target.closest('.tab');
     if (!t) return;
     t.classList.remove('dragging');
-    // 拖到視窗外放開 → 拉出成獨立視窗
-    const outside =
-      e.screenX < window.screenX || e.screenX > window.screenX + window.outerWidth ||
-      e.screenY < window.screenY || e.screenY > window.screenY + window.outerHeight;
-    if (outside && e.dataTransfer.dropEffect === 'none') popout(Number(t.dataset.id), true);
+    popoutIfDroppedOutside(Number(t.dataset.id), e);
   });
+
+  // 拖到視窗外放開 → 拉出成獨立視窗
+  async function popoutIfDroppedOutside(id, e) {
+    if (e.dataTransfer && e.dataTransfer.dropEffect !== 'none') return; // 放在某一格裡了
+    if (await qt.cursorOutside()) popout(id, true);
+  }
 
   // ---------- 來自 main 的事件 ----------
   qt.onData((id, data) => {
@@ -646,7 +704,7 @@
   // 給測試用
   window.__qt = {
     sessions, slots, order, show, popout, moveToSlot, newSession, closeSession, showChooser,
-    toggleLock,
+    toggleLock, handoff,
     get state() { return { activeSlot, maximized, autoZoom, lockedSlot, slots: [...slots], order: [...order] }; }
   };
 })();

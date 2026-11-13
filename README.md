@@ -16,7 +16,7 @@ Running several Claude Code sessions usually means juggling a pile of terminal w
 
 - **Four panes, evenly split.** Hover over a pane and it grows. Your keyboard focus follows the mouse.
 - **As many terminals as you want.** Every terminal appears in the list at the top. The grid always shows the four you used most recently.
-- **Pop out any terminal** into its own window. Close that window and the terminal goes back to the list, still running.
+- **Hand a terminal off to Terminal.app.** Drag it out of the window and it opens in a real Terminal window, in the same folder. If Claude Code was running, the conversation resumes there with `claude --continue`.
 - **See which sessions are busy or done.** Background terminals keep running. Their list entry shows a pulsing dot while output is streaming and a green dot when output has stopped and you haven't looked yet. It's an easy way to tell when Claude has finished.
 
 ## Features
@@ -29,7 +29,7 @@ Running several Claude Code sessions usually means juggling a pile of terminal w
 | 🖱 **Hover to zoom** | The pane under the mouse expands (66% by default), and its text gets bigger. It returns to an even split when the mouse leaves the window. |
 | 🔒 **Lock a zoomed pane** | Click 🔒 on a pane (or press `⌘L`) to keep it zoomed. Hovering elsewhere won't change the layout, and opening or switching terminals won't replace it. Click any pane to type in it. |
 | 🗂 **Unlimited terminals** | Click a terminal in the list to put it on screen. It replaces the least recently used pane. |
-| ⧉ **Pop-out windows** | Drag a terminal out of the window, or click ⧉. Scrollback and the running process are preserved. |
+| ⧉ **Open in Terminal.app** | Drag a terminal (its list entry or its pane's title bar) outside the window, or click ⧉. A new Terminal window opens in the same folder, and if Claude Code was running it picks up the same conversation (`claude --continue`). The pane in QuadTerm closes. |
 | 📁 **Resume Claude from a folder** | Drop a folder on a pane, for example the folder icon in Terminal.app's title bar, to run `claude --continue` there. |
 | 🔁 **Rearrange panes** | Drag a terminal from the list onto a pane. If it was already on screen, the two panes swap. |
 | ⌨️ **Claude Code friendly** | `⇧↩` inserts a newline. Option works as Meta. Each pane has a one-click **▶ claude** button. |
@@ -64,7 +64,8 @@ npm start
 | Click 🔒 in a pane's title bar | Keep that pane zoomed; click again to unlock |
 | Click a terminal in the list | Show it on screen (or jump to it if it's already visible) |
 | Drag a terminal onto a pane | Put it in that pane |
-| Drag a terminal outside the window | Pop it out into its own window |
+| Drag a terminal or a pane's title bar outside the window | Open it in Terminal.app (Claude Code resumes the same conversation) |
+| Drag a pane's title bar onto another pane | Swap the two panes |
 | Drop a folder on a pane | Choose: `claude --continue`, `claude --resume`, or a plain shell in that folder |
 | Drop files on a pane | Paste their paths (shell-quoted) |
 | Double-click a name in the list | Rename it |
@@ -76,7 +77,7 @@ npm start
 | `⌘T` / `⌘W` | New terminal / close the current terminal |
 | `⌘⇧[` / `⌘⇧]` | Previous / next terminal |
 | `⌘1` – `⌘4` | Focus pane 1–4 |
-| `⌘⇧D` | Pop the current terminal out (in a pop-out window: dock it back) |
+| `⌘⇧D` | Open the current terminal in Terminal.app |
 | `⌘L` | Lock / unlock the zoom on the current pane |
 | `⌘0` | Reset to an even split (also unlocks) |
 | `⌘⇧↩` | Maximize the current pane / restore |
@@ -127,6 +128,8 @@ Choose **版面 (Layout) → 開啟設定檔 (Open config file)** in the menu ba
 | `hoverDelay` | `120` | Milliseconds the mouse must rest on a pane before it zooms |
 | `animationMs` | `160` | Length of the zoom animation in milliseconds (`0` switches instantly) |
 | `resetOnLeave` | `true` | Return to an even split when the mouse leaves the window |
+| `popoutTarget` | `"terminal"` | What dragging a terminal out does. `"terminal"` hands it to a terminal app. `"window"` opens it in a separate QuadTerm window that keeps the process running, and closing that window puts the terminal back in the list. |
+| `terminalApp` | `"Terminal"` | App to hand off to, e.g. `"iTerm"` |
 | `shell` | `$SHELL` | Shell to launch. It starts as a login shell, so your `PATH` is loaded. |
 
 ## Troubleshooting

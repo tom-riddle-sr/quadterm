@@ -13,10 +13,12 @@ contextBridge.exposeInMainWorld('qt', {
   onMenu: (cb) => ipcRenderer.on('menu', (_e, action, arg) => cb(action, arg)),
 
   // 獨立視窗
+  handoff: (id, opts) => ipcRenderer.invoke('session:handoff', id, opts),
   popout: (id, payload) => ipcRenderer.send('session:popout', id, payload),
   popData: (id) => ipcRenderer.invoke('session:popdata', id),
   dock: (id, serialized) => ipcRenderer.send('session:dock', id, serialized),
   requestDock: (id) => ipcRenderer.send('session:requestDock', id),
+  cursorOutside: () => ipcRenderer.invoke('cursor:outside'),
   focusPopout: (id) => ipcRenderer.send('session:focusPopout', id),
   setPopTitle: (id, title) => ipcRenderer.send('session:title', id, title),
   onDocked: (cb) => ipcRenderer.on('session:docked', (_e, id, serialized, exited) => cb(id, serialized, exited)),

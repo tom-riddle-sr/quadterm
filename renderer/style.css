@@ -306,3 +306,8 @@ body.single.exited .exit-overlay { display: flex; }
 .lock-btn:hover { opacity: 1; }
 .pane.locked .lock-btn { filter: none; opacity: 1; background: rgba(217, 119, 87, .2); }
 .pane.locked .pane-header { background: rgba(217, 119, 87, .10); }
+
+/* 拖曳標題列 */
+.pane-header { cursor: grab; }
+.pane-header .pane-btn { cursor: pointer; }
+.pane.dragging { opacity: .5; }
