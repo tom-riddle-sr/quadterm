@@ -406,7 +406,7 @@
   // 放大方式：
   //  'font'   → 放大時只改字的大小，終端行列數不變 → 裡面的程式（claude）不會重畫、不會閃
   //  'resize' → 放大時改行列數（看得到更多內容，但每次切換 claude 都會重畫）
-  const zoomMode = config.zoomMode === 'resize' ? 'resize' : 'font';
+  const zoomMode = config.zoomMode === 'font' ? 'font' : 'resize';
   let base = null; // 四格平均時的大小與行列數 { w, h, cols, rows }
 
   function fitSlot(i) {

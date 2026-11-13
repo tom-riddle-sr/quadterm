@@ -26,7 +26,7 @@ Running several Claude Code sessions usually means juggling a pile of terminal w
 
 | | |
 |---|---|
-| 🖱 **Hover to zoom** | The pane under the mouse expands (66% by default), and its text gets bigger. It returns to an even split when the mouse leaves the window. |
+| 🖱 **Hover to zoom** | The pane under the mouse expands (72% by default). It returns to an even split when the mouse leaves the window. |
 | 🔒 **Lock a zoomed pane** | Click 🔒 on a pane (or press `⌘L`) to keep it zoomed. Hovering elsewhere won't change the layout, and opening or switching terminals won't replace it. Click any pane to type in it. |
 | 🗂 **Unlimited terminals** | Click a terminal in the list to put it on screen. It replaces the least recently used pane. |
 | ⧉ **Open in Terminal.app** | Drag a terminal (its list entry or its pane's title bar) outside the window, or click ⧉. A new Terminal window opens in the same folder, and if Claude Code was running it picks up the same conversation (`claude --continue`). The pane in QuadTerm closes. |
@@ -104,7 +104,7 @@ Choose **版面 (Layout) → 開啟設定檔 (Open config file)** in the menu ba
 ```json
 {
   "cwd": "~/projects",
-  "zoomRatio": 0.66,
+  "zoomRatio": 0.72,
   "hoverDelay": 120,
   "animationMs": 160,
   "resetOnLeave": true,
@@ -123,13 +123,14 @@ Choose **版面 (Layout) → 開啟設定檔 (Open config file)** in the menu ba
 | `startup` | 4 empty shells | Terminals created at launch. The first four go on screen and the rest go to the list. |
 | `startup[].command` | `""` | Command to run when the terminal starts, e.g. `claude` |
 | `cwd` | `~` | Working directory for new terminals |
-| `zoomRatio` | `0.66` | Share of width and height given to the zoomed pane (`0.5` turns zoom off) |
-| `zoomMode` | `"font"` | `"font"` scales the text and keeps every terminal's rows and columns fixed, so programs like Claude Code never redraw or flicker when you switch panes. `"resize"` gives the zoomed pane more rows and columns instead, but every switch makes each program redraw. |
+| `zoomRatio` | `0.72` | Share of width and height given to the zoomed pane (`0.5` turns zoom off) |
+| `zoomMode` | `"resize"` | `"resize"` gives the zoomed pane more rows and columns, and each switch makes programs like Claude Code redraw. `"font"` keeps rows and columns fixed and scales the text instead, so nothing redraws or flickers. |
 | `hoverDelay` | `120` | Milliseconds the mouse must rest on a pane before it zooms |
 | `animationMs` | `160` | Length of the zoom animation in milliseconds (`0` switches instantly) |
 | `resetOnLeave` | `true` | Return to an even split when the mouse leaves the window |
 | `popoutTarget` | `"terminal"` | What dragging a terminal out does. `"terminal"` hands it to a terminal app. `"window"` opens it in a separate QuadTerm window that keeps the process running, and closing that window puts the terminal back in the list. |
 | `terminalApp` | `"Terminal"` | App to hand off to, e.g. `"iTerm"` |
+| `gpuRendering` | `true` | Draw text with the GPU (WebGL), which is smoother. If text looks thinner or blurrier than in Terminal.app, especially on a non-Retina display, set it to `false`. |
 | `shell` | `$SHELL` | Shell to launch. It starts as a login shell, so your `PATH` is loaded. |
 
 ## Troubleshooting

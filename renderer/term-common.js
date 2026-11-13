@@ -15,6 +15,7 @@ window.QT_THEME = {
 window.SHELL_NAMES = /^(zsh|bash|fish|sh|login|tcsh|ksh|nu|)$/;
 
 window.makeTerm = function (config, fontSize, session) {
+  window.QT_GPU = config.gpuRendering !== false;
   const term = new Terminal({
     fontSize,
     fontFamily: config.fontFamily,
@@ -57,7 +58,7 @@ window.safeFit = function (fit, el) {
 // GPU（WebGL）繪製：比預設的 DOM 繪製快很多。
 // 瀏覽器同時能開的 WebGL context 有限，所以只給「看得到的」終端用，移出畫面就釋放。
 window.enableGL = function (s) {
-  if (s.gl || !s.term || typeof WebglAddon === 'undefined') return;
+  if (s.gl || !s.term || !window.QT_GPU || typeof WebglAddon === 'undefined') return;
   try {
     const gl = new WebglAddon.WebglAddon();
     gl.onContextLoss(() => { try { gl.dispose(); } catch (_) {} s.gl = null; });

@@ -23,7 +23,7 @@
 
 | | |
 |---|---|
-| 🖱 **滑鼠移過去自動放大** | 滑鼠所在那格放大（預設 66%），字也跟著變大；滑鼠離開視窗就恢復平均 |
+| 🖱 **滑鼠移過去自動放大** | 滑鼠所在那格放大（預設 72%），滑鼠離開視窗就恢復平均 |
 | 🔒 **鎖定放大** | 按某格的 🔒（或 `⌘L`），那格就一直維持放大：滑鼠移到別格不會切換，開新終端或從列表換終端也不會換掉它。其他格點一下就能打字 |
 | 🗂 **終端數量不限** | 點列表上的終端就會顯示到畫面上，取代最久沒用的那格 |
 | ⧉ **在 Terminal 開啟** | 把終端（列表上的項目或某格的標題列）拖到視窗外，或按 ⧉：在同一個資料夾開一個 Terminal 新視窗；原本在跑 claude 的話會接續同一段對話（`claude --continue`），QuadTerm 這格關掉 |
@@ -101,7 +101,7 @@ npm start
 ```json
 {
   "cwd": "~/projects",
-  "zoomRatio": 0.66,
+  "zoomRatio": 0.72,
   "hoverDelay": 120,
   "animationMs": 160,
   "resetOnLeave": true,
@@ -120,13 +120,14 @@ npm start
 | `startup` | 4 個空白終端 | 開啟時自動建立的終端，可以超過 4 個；前 4 個放在畫面上，其餘放在列表 |
 | `startup[].command` | `""` | 終端建立時自動執行的指令，例如 `claude` |
 | `cwd` | `~` | 新終端的預設工作目錄 |
-| `zoomRatio` | `0.66` | 放大那格佔的寬高比例（`0.5` = 不放大） |
-| `zoomMode` | `"font"` | `"font"`：放大時只放大字，終端行列數不變，所以切換時 claude 等程式不會重畫、不會閃。`"resize"`：放大的那格會有更多行列、看得到更多內容，但每次切換程式都會重畫 |
+| `zoomRatio` | `0.72` | 放大那格佔的寬高比例（`0.5` = 不放大） |
+| `zoomMode` | `"resize"` | `"resize"`：放大的那格會有更多行列、看得到更多內容，每次切換 claude 等程式會重畫一次。`"font"`：行列數不變、只放大字，切換時不會重畫、不會閃 |
 | `hoverDelay` | `120` | 滑鼠要在某格停多少毫秒才放大 |
 | `animationMs` | `160` | 放大動畫長度（毫秒），`0` = 不要動畫、直接切換 |
 | `resetOnLeave` | `true` | 滑鼠離開視窗時恢復平均 |
 | `popoutTarget` | `"terminal"` | 拉出去時要做什麼：`"terminal"` = 交給終端機 app；`"window"` = 開成 QuadTerm 自己的獨立視窗（程式不中斷，關掉視窗會收回列表） |
 | `terminalApp` | `"Terminal"` | 要交給哪個終端機 app，例如 `"iTerm"` |
+| `gpuRendering` | `true` | 用 GPU（WebGL）畫字，比較順。如果覺得字比 Terminal 細、糊（外接非 Retina 螢幕特別明顯），改成 `false` |
 | `shell` | `$SHELL` | 要用的 shell，會以登入 shell 啟動，所以會載入你的 `PATH` |
 
 ## 疑難排解
