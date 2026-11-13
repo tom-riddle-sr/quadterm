@@ -300,3 +300,9 @@ body.single #single-cwd { flex: 1; max-width: none; }
 body.single .term-wrap { position: absolute; top: 40px; left: 0; right: 0; bottom: 0; padding: 4px 4px 4px 8px; background: var(--pane-bg); }
 body.single .exit-overlay { inset: 40px 0 0 0; }
 body.single.exited .exit-overlay { display: flex; }
+
+/* 鎖定放大 */
+.lock-btn { filter: grayscale(1); opacity: .55; }
+.lock-btn:hover { opacity: 1; }
+.pane.locked .lock-btn { filter: none; opacity: 1; background: rgba(217, 119, 87, .2); }
+.pane.locked .pane-header { background: rgba(217, 119, 87, .10); }

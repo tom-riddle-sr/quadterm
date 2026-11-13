@@ -15,6 +15,7 @@
   let clock = 0;
   let renaming = false;
   let animating = false;
+  let lockedSlot = null; // 鎖定放大的格子（null = 沒鎖）
   let animTimer = null;
   const animMs = Math.max(0, Number(config.animationMs ?? 160));
   document.documentElement.style.setProperty('--dur', animMs + 'ms');
@@ -48,6 +49,7 @@
         <span class="pane-cwd"></span>
         <button class="pane-btn" data-act="claude" title="在這格執行 claude">▶ claude</button>
         <button class="pane-btn" data-act="pop" title="拉出成獨立視窗 (⌘⇧D)">⧉</button>
+        <button class="pane-btn lock-btn" data-act="lock" title="鎖定放大這格 (⌘L)">🔒</button>
         <button class="pane-btn" data-act="max" title="這格全螢幕 (⌘⇧↩)">⤢</button>
         <button class="pane-btn" data-act="restart" title="重新啟動 (⌘⇧R)">↻</button>
         <button class="pane-btn" data-act="close" title="關閉這個終端 (⌘W)">✕</button>
@@ -72,7 +74,7 @@
     slotEls.push({ el, wrap, title: el.querySelector('.pane-title'), cwd: el.querySelector('.pane-cwd') });
 
     el.addEventListener('mouseenter', () => {
-      if (!autoZoom || maximized || slots[i] == null) return;
+      if (!autoZoom || maximized || slots[i] == null || lockedSlot != null) return;
       clearTimeout(hoverTimer);
       hoverTimer = setTimeout(() => activate(i, { zoom: true, focus: true }), config.hoverDelay);
     });
@@ -90,6 +92,7 @@
       if (act === 'claude') { qt.write(s.id, 'claude\r'); s.term.focus(); }
       if (act === 'pop') popout(s.id, false);
       if (act === 'max') { activate(i, { focus: true }); toggleMaximize(); }
+      if (act === 'lock') toggleLock(i);
       if (act === 'restart') restart(s.id);
       if (act === 'close') closeSession(s.id);
     });
@@ -203,11 +206,13 @@
   function pickSlot() {
     const empty = slots.indexOf(null);
     if (empty >= 0) return empty;
-    let best = 0;
-    for (let i = 1; i < 4; i++) {
-      if (sessions.get(slots[i]).lastUsed < sessions.get(slots[best]).lastUsed) best = i;
+    // 換掉最久沒用的那格，但不換掉鎖定的那格
+    let best = -1;
+    for (let i = 0; i < 4; i++) {
+      if (i === lockedSlot) continue;
+      if (best < 0 || sessions.get(slots[i]).lastUsed < sessions.get(slots[best]).lastUsed) best = i;
     }
-    return best;
+    return best < 0 ? 0 : best;
   }
 
   // 把 session 放進第 slot 格（原本在那格的退回列表）
@@ -380,7 +385,7 @@
     if (i < 0) return;
     activeSlot = i;
     slotEls.forEach((x, k) => x.el.classList.toggle('active', k === i));
-    if (zoom) applyZoom(i);
+    if (zoom) applyZoom(lockedSlot != null ? lockedSlot : i);
     const s = sessions.get(slots[i]);
     if (focus && s && s.term) s.term.focus();
     renderTabs();
@@ -424,11 +429,26 @@
     activeSession()?.term?.focus();
   }
 
+  function toggleLock(i) {
+    if (i == null || i < 0) return;
+    lockedSlot = lockedSlot === i ? null : i;
+    slotEls.forEach((x, k) => {
+      const on = k === lockedSlot;
+      x.el.classList.toggle('locked', on);
+      const btn = x.el.querySelector('.lock-btn');
+      btn.title = on ? '解除鎖定 (⌘L)' : '鎖定放大這格 (⌘L)';
+    });
+    if (lockedSlot != null && !maximized) {
+      applyZoom(lockedSlot);
+      activate(lockedSlot, { focus: true });
+    }
+  }
+
   function setAuto(on) {
     autoZoom = on;
     badge.textContent = `自動放大：${on ? '開' : '關'}`;
     badge.classList.toggle('off', !on);
-    if (!on) setEqual();
+    if (!on && lockedSlot == null) setEqual();
   }
   badge.addEventListener('click', () => setAuto(!autoZoom));
   document.getElementById('new-btn').addEventListener('click', () => newSession({}));
@@ -438,7 +458,7 @@
   });
   document.documentElement.addEventListener('mouseleave', () => {
     clearTimeout(hoverTimer);
-    if (autoZoom && config.resetOnLeave && !maximized) setEqual();
+    if (autoZoom && config.resetOnLeave && !maximized && lockedSlot == null) setEqual();
   });
   window.addEventListener('resize', () => [0, 1, 2, 3].forEach(fitSlot));
 
@@ -599,7 +619,8 @@
       case 'selectAll': s?.term?.selectAll(); break;
       case 'clear': s?.term?.clear(); break;
       case 'toggleAuto': setAuto(!autoZoom); break;
-      case 'equal': if (maximized) toggleMaximize(); setEqual(); break;
+      case 'equal': if (maximized) toggleMaximize(); if (lockedSlot != null) toggleLock(lockedSlot); setEqual(); break;
+      case 'lock': toggleLock(activeSlot); break;
       case 'maximize': toggleMaximize(); break;
       case 'focus': activate(arg, { zoom: autoZoom && !maximized && slots[arg] != null, focus: true }); break;
       case 'fontUp':
@@ -625,6 +646,7 @@
   // 給測試用
   window.__qt = {
     sessions, slots, order, show, popout, moveToSlot, newSession, closeSession, showChooser,
-    get state() { return { activeSlot, maximized, autoZoom, slots: [...slots], order: [...order] }; }
+    toggleLock,
+    get state() { return { activeSlot, maximized, autoZoom, lockedSlot, slots: [...slots], order: [...order] }; }
   };
 })();

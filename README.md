@@ -27,6 +27,7 @@ Running several Claude Code sessions usually means juggling a pile of terminal w
 | | |
 |---|---|
 | 🖱 **Hover to zoom** | The pane under the mouse expands (66% by default), and its text gets bigger. It returns to an even split when the mouse leaves the window. |
+| 🔒 **Lock a zoomed pane** | Click 🔒 on a pane (or press `⌘L`) to keep it zoomed. Hovering elsewhere won't change the layout, and opening or switching terminals won't replace it. Click any pane to type in it. |
 | 🗂 **Unlimited terminals** | Click a terminal in the list to put it on screen. It replaces the least recently used pane. |
 | ⧉ **Pop-out windows** | Drag a terminal out of the window, or click ⧉. Scrollback and the running process are preserved. |
 | 📁 **Resume Claude from a folder** | Drop a folder on a pane, for example the folder icon in Terminal.app's title bar, to run `claude --continue` there. |
@@ -59,7 +60,8 @@ npm start
 
 | Action | What it does |
 |---|---|
-| Hover a pane | Zoom it and focus it |
+| Hover a pane | Zoom it and focus it (unless a pane is locked) |
+| Click 🔒 in a pane's title bar | Keep that pane zoomed; click again to unlock |
 | Click a terminal in the list | Show it on screen (or jump to it if it's already visible) |
 | Drag a terminal onto a pane | Put it in that pane |
 | Drag a terminal outside the window | Pop it out into its own window |
@@ -75,7 +77,8 @@ npm start
 | `⌘⇧[` / `⌘⇧]` | Previous / next terminal |
 | `⌘1` – `⌘4` | Focus pane 1–4 |
 | `⌘⇧D` | Pop the current terminal out (in a pop-out window: dock it back) |
-| `⌘0` | Reset to an even split |
+| `⌘L` | Lock / unlock the zoom on the current pane |
+| `⌘0` | Reset to an even split (also unlocks) |
 | `⌘⇧↩` | Maximize the current pane / restore |
 | `⌘⇧Z` | Toggle hover-to-zoom |
 | `⌘C` / `⌘V` / `⌘K` | Copy / paste / clear |

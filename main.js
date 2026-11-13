@@ -296,7 +296,8 @@ function buildMenu() {
       label: '版面',
       submenu: [
         { label: '開關「滑鼠移過去自動放大」', accelerator: 'CmdOrCtrl+Shift+Z', click: () => send('menu', 'toggleAuto') },
-        { label: '恢復平均分配', accelerator: 'CmdOrCtrl+0', click: () => send('menu', 'equal') },
+        { label: '鎖定／解鎖目前這格的放大', accelerator: 'CmdOrCtrl+L', click: () => send('menu', 'lock') },
+        { label: '恢復平均分配（也會解鎖）', accelerator: 'CmdOrCtrl+0', click: () => send('menu', 'equal') },
         { label: '全螢幕放大目前這格', accelerator: 'CmdOrCtrl+Shift+Return', click: () => send('menu', 'maximize') },
         { type: 'separator' },
         ...[1, 2, 3, 4].map((n) => ({
