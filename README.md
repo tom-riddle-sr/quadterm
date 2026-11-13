@@ -26,7 +26,7 @@ Running several Claude Code sessions usually means juggling a pile of terminal w
 
 | | |
 |---|---|
-| 🖱 **Hover to zoom** | The pane under the mouse expands (72% by default). It returns to an even split when the mouse leaves the window. |
+| 🖱 **Hover to zoom** | The pane under the mouse expands (66% by default), and its text gets bigger. It returns to an even split when the mouse leaves the window. |
 | 🗂 **Unlimited terminals** | Click a terminal in the list to put it on screen. It replaces the least recently used pane. |
 | ⧉ **Pop-out windows** | Drag a terminal out of the window, or click ⧉. Scrollback and the running process are preserved. |
 | 📁 **Resume Claude from a folder** | Drop a folder on a pane, for example the folder icon in Terminal.app's title bar, to run `claude --continue` there. |
@@ -100,7 +100,7 @@ Choose **版面 (Layout) → 開啟設定檔 (Open config file)** in the menu ba
 ```json
 {
   "cwd": "~/projects",
-  "zoomRatio": 0.72,
+  "zoomRatio": 0.66,
   "hoverDelay": 120,
   "animationMs": 160,
   "resetOnLeave": true,
@@ -119,7 +119,8 @@ Choose **版面 (Layout) → 開啟設定檔 (Open config file)** in the menu ba
 | `startup` | 4 empty shells | Terminals created at launch. The first four go on screen and the rest go to the list. |
 | `startup[].command` | `""` | Command to run when the terminal starts, e.g. `claude` |
 | `cwd` | `~` | Working directory for new terminals |
-| `zoomRatio` | `0.72` | Share of width and height given to the zoomed pane (`0.5` turns zoom off) |
+| `zoomRatio` | `0.66` | Share of width and height given to the zoomed pane (`0.5` turns zoom off) |
+| `zoomMode` | `"font"` | `"font"` scales the text and keeps every terminal's rows and columns fixed, so programs like Claude Code never redraw or flicker when you switch panes. `"resize"` gives the zoomed pane more rows and columns instead, but every switch makes each program redraw. |
 | `hoverDelay` | `120` | Milliseconds the mouse must rest on a pane before it zooms |
 | `animationMs` | `160` | Length of the zoom animation in milliseconds (`0` switches instantly) |
 | `resetOnLeave` | `true` | Return to an even split when the mouse leaves the window |

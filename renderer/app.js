@@ -342,9 +342,29 @@
   });
 
   // ---------- 畫面更新 ----------
+  // 放大方式：
+  //  'font'   → 放大時只改字的大小，終端行列數不變 → 裡面的程式（claude）不會重畫、不會閃
+  //  'resize' → 放大時改行列數（看得到更多內容，但每次切換 claude 都會重畫）
+  const zoomMode = config.zoomMode === 'resize' ? 'resize' : 'font';
+  let base = null; // 四格平均時的大小與行列數 { w, h, cols, rows }
+
   function fitSlot(i) {
     const s = sessions.get(slots[i]);
-    if (s && s.fit) safeFit(s.fit, slotEls[i].wrap);
+    if (!s || !s.fit) return;
+    const wrap = slotEls[i].wrap;
+    const zoomedLayout = grid.classList.contains('zoomed') && !maximized;
+    if (zoomMode === 'font' && zoomedLayout && base) {
+      if (s.term.cols !== base.cols || s.term.rows !== base.rows) s.term.resize(base.cols, base.rows);
+      const scale = Math.min(wrap.clientWidth / base.w, wrap.clientHeight / base.h) * 0.98;
+      const fs = Math.max(6, Math.floor(fontSize * scale * 2) / 2);
+      if (s.term.options.fontSize !== fs) s.term.options.fontSize = fs;
+      return;
+    }
+    if (s.term.options.fontSize !== fontSize) s.term.options.fontSize = fontSize;
+    safeFit(s.fit, wrap);
+    if (!zoomedLayout && !maximized && wrap.clientWidth > 20) {
+      base = { w: wrap.clientWidth, h: wrap.clientHeight, cols: s.term.cols, rows: s.term.rows };
+    }
   }
 
   function refreshSlot(i) {
@@ -586,7 +606,10 @@
       case 'fontDown':
         fontSize = Math.min(28, Math.max(8, fontSize + (action === 'fontUp' ? 1 : -1)));
         for (const x of sessions.values()) if (x.term) x.term.options.fontSize = fontSize;
-        [0, 1, 2, 3].forEach(fitSlot);
+        // 字級變了，四格平均時的行列數也要重算
+        if (maximized) toggleMaximize();
+        setEqual();
+        if (!animating) [0, 1, 2, 3].forEach(fitSlot);
         break;
     }
   });

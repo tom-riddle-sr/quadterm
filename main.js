@@ -12,7 +12,8 @@ const DEFAULT_CONFIG = {
   shell: '',                // 空白 = 用 $SHELL
   fontSize: 13,
   fontFamily: 'Menlo, "SF Mono", Monaco, monospace',
-  zoomRatio: 0.72,          // 放大時，hover 那格佔的寬高比例（0.5 = 不放大）
+  zoomRatio: 0.66,          // 放大時，hover 那格佔的寬高比例（0.5 = 不放大）
+  zoomMode: 'font',         // 'font' = 放大字（不重畫、不閃）；'resize' = 放大行列數（看得到更多內容）
   hoverDelay: 120,          // 滑鼠停多久（毫秒）才放大
   animationMs: 160,         // 放大動畫長度（毫秒），0 = 不要動畫、直接切換
   resetOnLeave: true,       // 滑鼠離開視窗時恢復平均
