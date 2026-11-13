@@ -127,7 +127,8 @@ npm start
 | `resetOnLeave` | `true` | 滑鼠離開視窗時恢復平均 |
 | `popoutTarget` | `"terminal"` | 拉出去時要做什麼：`"terminal"` = 交給終端機 app；`"window"` = 開成 QuadTerm 自己的獨立視窗（程式不中斷，關掉視窗會收回列表） |
 | `terminalApp` | `"Terminal"` | 要交給哪個終端機 app，例如 `"iTerm"` |
-| `gpuRendering` | `true` | 用 GPU（WebGL）畫字，比較順。如果覺得字比 Terminal 細、糊（外接非 Retina 螢幕特別明顯），改成 `false` |
+| `gpuRendering` | `false` | 用 GPU（WebGL）畫字；輸出量非常大時比較快，但字看起來比 Terminal 細、糊 |
+| `fontFamily` | SF Mono | 跟 macOS 內建 Terminal 一樣的字型 |
 | `shell` | `$SHELL` | 要用的 shell，會以登入 shell 啟動，所以會載入你的 `PATH` |
 
 ## 疑難排解
@@ -138,7 +139,7 @@ npm start
 
 ## 使用技術
 
-[Electron](https://www.electronjs.org) · [xterm.js](https://xtermjs.org)（WebGL 繪製）· [node-pty](https://github.com/microsoft/node-pty)
+[Electron](https://www.electronjs.org) · [xterm.js](https://xtermjs.org)· [node-pty](https://github.com/microsoft/node-pty)
 
 ## 授權
 

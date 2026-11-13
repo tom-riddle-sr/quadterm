@@ -130,7 +130,8 @@ Choose **版面 (Layout) → 開啟設定檔 (Open config file)** in the menu ba
 | `resetOnLeave` | `true` | Return to an even split when the mouse leaves the window |
 | `popoutTarget` | `"terminal"` | What dragging a terminal out does. `"terminal"` hands it to a terminal app. `"window"` opens it in a separate QuadTerm window that keeps the process running, and closing that window puts the terminal back in the list. |
 | `terminalApp` | `"Terminal"` | App to hand off to, e.g. `"iTerm"` |
-| `gpuRendering` | `true` | Draw text with the GPU (WebGL), which is smoother. If text looks thinner or blurrier than in Terminal.app, especially on a non-Retina display, set it to `false`. |
+| `gpuRendering` | `false` | Draw text with the GPU (WebGL). It can help with very heavy output, but text looks thinner and blurrier than in Terminal.app. |
+| `fontFamily` | SF Mono | Same font as Terminal.app |
 | `shell` | `$SHELL` | Shell to launch. It starts as a login shell, so your `PATH` is loaded. |
 
 ## Troubleshooting
@@ -141,7 +142,7 @@ Choose **版面 (Layout) → 開啟設定檔 (Open config file)** in the menu ba
 
 ## Built with
 
-[Electron](https://www.electronjs.org) · [xterm.js](https://xtermjs.org) with its WebGL renderer · [node-pty](https://github.com/microsoft/node-pty)
+[Electron](https://www.electronjs.org) · [xterm.js](https://xtermjs.org) · [node-pty](https://github.com/microsoft/node-pty)
 
 ## License
 

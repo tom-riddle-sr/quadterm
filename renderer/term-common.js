@@ -15,7 +15,7 @@ window.QT_THEME = {
 window.SHELL_NAMES = /^(zsh|bash|fish|sh|login|tcsh|ksh|nu|)$/;
 
 window.makeTerm = function (config, fontSize, session) {
-  window.QT_GPU = config.gpuRendering !== false;
+  window.QT_GPU = config.gpuRendering === true;
   const term = new Terminal({
     fontSize,
     fontFamily: config.fontFamily,

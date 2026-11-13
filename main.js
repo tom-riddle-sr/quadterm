@@ -11,8 +11,8 @@ const DEFAULT_CONFIG = {
   cwd: '~',                 // 新終端的預設工作目錄
   shell: '',                // 空白 = 用 $SHELL
   fontSize: 13,
-  gpuRendering: true,       // 用 GPU 畫字（比較順）；覺得字變細、變糊可以改成 false
-  fontFamily: 'Menlo, "SF Mono", Monaco, monospace',
+  gpuRendering: false,      // true = 用 GPU（WebGL）畫字，字很多時比較快，但字的邊緣看起來比較細、比較糊
+  fontFamily: '"SF Mono", Menlo, Monaco, monospace', // 跟 macOS 內建 Terminal 一樣
   zoomRatio: 0.72,          // 放大時，hover 那格佔的寬高比例（0.5 = 不放大）
   zoomMode: 'resize',       // 'resize' = 放大行列數（看得到更多內容）；'font' = 只放大字（切換時程式不重畫、不閃）
   hoverDelay: 120,          // 滑鼠停多久（毫秒）才放大
