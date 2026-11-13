@@ -14,6 +14,7 @@ const DEFAULT_CONFIG = {
   fontFamily: 'Menlo, "SF Mono", Monaco, monospace',
   zoomRatio: 0.72,          // 放大時，hover 那格佔的寬高比例（0.5 = 不放大）
   hoverDelay: 120,          // 滑鼠停多久（毫秒）才放大
+  animationMs: 160,         // 放大動畫長度（毫秒），0 = 不要動畫、直接切換
   resetOnLeave: true,       // 滑鼠離開視窗時恢復平均
   // 程式開啟時自動建立的終端（可以少於或多於 4 個）
   startup: [

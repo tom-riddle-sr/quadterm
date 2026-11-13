@@ -99,6 +99,7 @@ npm start
   "cwd": "~/projects",
   "zoomRatio": 0.72,
   "hoverDelay": 120,
+  "animationMs": 160,
   "resetOnLeave": true,
   "fontSize": 13,
   "startup": [
@@ -117,6 +118,7 @@ npm start
 | `cwd` | `~` | 新終端的預設工作目錄 |
 | `zoomRatio` | `0.72` | 放大那格佔的寬高比例（`0.5` = 不放大） |
 | `hoverDelay` | `120` | 滑鼠要在某格停多少毫秒才放大 |
+| `animationMs` | `160` | 放大動畫長度（毫秒），`0` = 不要動畫、直接切換 |
 | `resetOnLeave` | `true` | 滑鼠離開視窗時恢復平均 |
 | `shell` | `$SHELL` | 要用的 shell，會以登入 shell 啟動，所以會載入你的 `PATH` |
 
@@ -128,7 +130,7 @@ npm start
 
 ## 使用技術
 
-[Electron](https://www.electronjs.org) · [xterm.js](https://xtermjs.org) · [node-pty](https://github.com/microsoft/node-pty)
+[Electron](https://www.electronjs.org) · [xterm.js](https://xtermjs.org)（WebGL 繪製）· [node-pty](https://github.com/microsoft/node-pty)
 
 ## 授權
 

@@ -102,6 +102,7 @@ Choose **版面 (Layout) → 開啟設定檔 (Open config file)** in the menu ba
   "cwd": "~/projects",
   "zoomRatio": 0.72,
   "hoverDelay": 120,
+  "animationMs": 160,
   "resetOnLeave": true,
   "fontSize": 13,
   "startup": [
@@ -120,6 +121,7 @@ Choose **版面 (Layout) → 開啟設定檔 (Open config file)** in the menu ba
 | `cwd` | `~` | Working directory for new terminals |
 | `zoomRatio` | `0.72` | Share of width and height given to the zoomed pane (`0.5` turns zoom off) |
 | `hoverDelay` | `120` | Milliseconds the mouse must rest on a pane before it zooms |
+| `animationMs` | `160` | Length of the zoom animation in milliseconds (`0` switches instantly) |
 | `resetOnLeave` | `true` | Return to an even split when the mouse leaves the window |
 | `shell` | `$SHELL` | Shell to launch. It starts as a login shell, so your `PATH` is loaded. |
 
@@ -131,7 +133,7 @@ Choose **版面 (Layout) → 開啟設定檔 (Open config file)** in the menu ba
 
 ## Built with
 
-[Electron](https://www.electronjs.org) · [xterm.js](https://xtermjs.org) · [node-pty](https://github.com/microsoft/node-pty)
+[Electron](https://www.electronjs.org) · [xterm.js](https://xtermjs.org) with its WebGL renderer · [node-pty](https://github.com/microsoft/node-pty)
 
 ## License
 

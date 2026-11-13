@@ -1,4 +1,4 @@
-/* global Terminal, FitAddon, WebLinksAddon, SerializeAddon, qt */
+/* global Terminal, FitAddon, WebLinksAddon, SerializeAddon, WebglAddon, qt */
 // 主視窗和獨立視窗共用：建立一個 xterm 並接好鍵盤／連結等
 window.QT_THEME = {
   background: '#1b1e25',
@@ -52,4 +52,38 @@ window.safeFit = function (fit, el) {
   try {
     if (el && el.clientWidth > 20 && el.clientHeight > 20) fit.fit();
   } catch (_) {}
+};
+
+// GPU（WebGL）繪製：比預設的 DOM 繪製快很多。
+// 瀏覽器同時能開的 WebGL context 有限，所以只給「看得到的」終端用，移出畫面就釋放。
+window.enableGL = function (s) {
+  if (s.gl || !s.term || typeof WebglAddon === 'undefined') return;
+  try {
+    const gl = new WebglAddon.WebglAddon();
+    gl.onContextLoss(() => { try { gl.dispose(); } catch (_) {} s.gl = null; });
+    s.term.loadAddon(gl);
+    s.gl = gl;
+  } catch (_) {
+    s.gl = null; // 不支援 WebGL 就退回 DOM 繪製
+  }
+};
+window.disableGL = function (s) {
+  if (!s.gl) return;
+  try { s.gl.dispose(); } catch (_) {}
+  s.gl = null;
+};
+
+// 通知 shell「視窗大小變了」要節流：claude 每收到一次就會整個畫面重畫
+window.makePtyResizer = function (id, delay = 120) {
+  let t = null;
+  let last = '';
+  return (cols, rows) => {
+    clearTimeout(t);
+    t = setTimeout(() => {
+      const key = cols + 'x' + rows;
+      if (key === last) return;
+      last = key;
+      qt.resize(id, cols, rows);
+    }, delay);
+  };
 };

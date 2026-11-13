@@ -1,4 +1,4 @@
-/* global qt, makeTerm, safeFit, SHELL_NAMES */
+/* global qt, makeTerm, safeFit, SHELL_NAMES, enableGL, disableGL, makePtyResizer */
 (async function () {
   const config = await qt.getConfig();
   const grid = document.getElementById('grid');
@@ -14,6 +14,10 @@
   let nextId = 1;
   let clock = 0;
   let renaming = false;
+  let animating = false;
+  let animTimer = null;
+  const animMs = Math.max(0, Number(config.animationMs ?? 160));
+  document.documentElement.style.setProperty('--dur', animMs + 'ms');
 
   const sessions = new Map(); // id -> session
   const order = [];           // 列表順序
@@ -127,6 +131,7 @@
 
     let fitTimer = null;
     new ResizeObserver(() => {
+      if (animating) return; // 動畫中不重算，等動畫結束一次算好
       clearTimeout(fitTimer);
       fitTimer = setTimeout(() => fitSlot(i), 40);
     }).observe(wrap);
@@ -165,7 +170,8 @@
       if (s.exited) { if (d === '\r') restart(s.id); return; }
       qt.write(s.id, d);
     });
-    term.onResize(({ cols, rows }) => qt.resize(s.id, cols, rows));
+    const ptyResize = makePtyResizer(s.id);
+    term.onResize(({ cols, rows }) => ptyResize(cols, rows));
     term.onTitleChange((t) => { s.osTitle = t; });
   }
 
@@ -210,12 +216,13 @@
     const old = slots[slot];
     if (old != null && old !== id) {
       const o = sessions.get(old);
-      if (o && o.host) offscreen.appendChild(o.host);
+      if (o && o.host) { disableGL(o); offscreen.appendChild(o.host); }
     }
     const from = slotOf(id);
     if (from >= 0 && from !== slot) { slots[from] = null; refreshSlot(from); }
     slots[slot] = id;
     slotEls[slot].wrap.appendChild(s.host);
+    enableGL(s);
     s.unread = false;
     refreshSlot(slot);
     fitSlot(slot);
@@ -310,7 +317,7 @@
     };
     s.term.dispose();
     s.host.remove();
-    s.term = s.host = s.fit = s.serializer = null;
+    s.term = s.host = s.fit = s.serializer = s.gl = null;
     s.popped = true;
     s.busy = false;
     if (i >= 0) { slots[i] = null; fillSlot(i); }
@@ -363,15 +370,31 @@
     const r = Math.min(Math.max(config.zoomRatio, 0.5), 0.95);
     const col = i % 2, row = Math.floor(i / 2);
     const big = `${r}fr`, small = `${1 - r}fr`;
-    grid.style.gridTemplateColumns = col === 0 ? `${big} ${small}` : `${small} ${big}`;
-    grid.style.gridTemplateRows = row === 0 ? `${big} ${small}` : `${small} ${big}`;
+    setLayout(col === 0 ? `${big} ${small}` : `${small} ${big}`, row === 0 ? `${big} ${small}` : `${small} ${big}`);
     grid.classList.add('zoomed');
   }
 
   function setEqual() {
-    grid.style.gridTemplateColumns = '1fr 1fr';
-    grid.style.gridTemplateRows = '1fr 1fr';
+    setLayout('1fr 1fr', '1fr 1fr');
     grid.classList.remove('zoomed');
+  }
+
+  // 改版面：動畫期間不重算終端大小，動畫結束後 4 格一次算好
+  function setLayout(cols, rows) {
+    if (grid.style.gridTemplateColumns === cols && grid.style.gridTemplateRows === rows) return;
+    grid.style.gridTemplateColumns = cols;
+    grid.style.gridTemplateRows = rows;
+    if (animMs === 0) { [0, 1, 2, 3].forEach(fitSlot); return; }
+    animating = true;
+    clearTimeout(animTimer);
+    animTimer = setTimeout(endAnimation, animMs + 60);
+  }
+
+  function endAnimation() {
+    clearTimeout(animTimer);
+    if (!animating) return;
+    animating = false;
+    [0, 1, 2, 3].forEach(fitSlot);
   }
 
   function toggleMaximize() {
@@ -391,7 +414,7 @@
   document.getElementById('new-btn').addEventListener('click', () => newSession({}));
 
   grid.addEventListener('transitionend', (e) => {
-    if (e.target === grid) [0, 1, 2, 3].forEach(fitSlot);
+    if (e.target === grid) endAnimation();
   });
   document.documentElement.addEventListener('mouseleave', () => {
     clearTimeout(hoverTimer);

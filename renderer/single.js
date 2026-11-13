@@ -1,4 +1,4 @@
-/* global qt, makeTerm, safeFit, SHELL_NAMES */
+/* global qt, makeTerm, safeFit, SHELL_NAMES, enableGL, makePtyResizer */
 // 拉出來的獨立終端視窗
 (async function () {
   const id = Number(new URLSearchParams(location.search).get('id'));
@@ -18,8 +18,10 @@
 
   const s = { id };
   const { term, fit, serializer } = makeTerm(config, fontSize, s);
+  s.term = term;
   if (data.cols && data.rows) term.resize(data.cols, data.rows);
   term.open(wrap);
+  enableGL(s);
   if (data.serialized) term.write(data.serialized);
   if (data.queued) term.write(data.queued);
 
@@ -49,7 +51,8 @@
     if (exited) { if (d === '\r') restart(); return; }
     qt.write(id, d);
   });
-  term.onResize(({ cols, rows }) => qt.resize(id, cols, rows));
+  const ptyResize = makePtyResizer(id);
+  term.onResize(({ cols, rows }) => ptyResize(cols, rows));
 
   qt.onData((i, d) => { if (i === id) term.write(d); });
   qt.onExit((i) => { if (i === id) setExited(true); });
